@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WomenShield v2v - SafeSphere Dashboard</title>
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background-color: #0f0f12;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .neon-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px rgba(255, 51, 102, 0.6); }
+      50% { opacity: .85; transform: scale(0.97); box-shadow: 0 0 40px rgba(255, 51, 102, 0.9); }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center border-b border-zinc-800 pb-4 mb-8 max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i data-lucide="shield" class="w-8 h-8 text-[#ff3366]"></i>
+      <h1 class="text-2xl font-black tracking-wider">WomenShield <span class="text-xs border border-[#ff3366] text-[#ff3366] px-2 py-0.5 rounded ml-2">v2v</span></h1>
+    </div>
+    <div class="text-sm text-zinc-400 bg-zinc-900/80 px-4 py-2 rounded-full border border-zinc-800">
+      Backend Status: <span id="backend-status" class="text-amber-500 font-semibold">Connecting...</span>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+    
+    <!-- Left Card: SOS Panel -->
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between items-center min-h-[400px]">
+      <div class="text-center w-full">
+        <h2 class="text-xl font-bold text-[#ff3366] flex items-center justify-center gap-2 mb-2">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i> Emergency SOS
+        </h2>
+        <p class="text-zinc-500 text-sm">Press the button below to instantly broadcast your live location to emergency contacts.</p>
+      </div>
+
+      <!-- Pulse Button -->
+      <div class="my-8">
+        <button id="sos-btn" onclick="triggerSOS()" class="w-48 h-48 rounded-full border-4 border-[#ff3366] bg-zinc-950 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 neon-pulse">
+          <i id="sos-icon" data-lucide="alert-triangle" class="w-16 h-16 text-[#ff3366]"></i>
+          <span id="sos-text" class="font-bold text-xs mt-3 tracking-widest text-[#ff3366]">TAP TO SOS</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-zinc-600 text-center">SafeSphere Real-Time Network Active</p>
+    </div>
+
+    <!-- Right Side Cards -->
+    <div class="flex flex-col gap-6">
+      
+      <!-- Live Location Card -->
+      <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-[#ff3366] flex items-center gap-2 mb-4">
+          <i data-lucide="map-pin" class="w-5 h-5"></i> Live Location
+        </h3>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-sm">
+            <span class="text-zinc-500 block text-xs">Latitude</span>
+            <strong id="lat" class="text-zinc-300">Detecting...</strong>
+          </div>
+          <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-sm">
+            <span class="text-zinc-500 block text-xs">Longitude</span>
+            <strong id="lng" class="text-zinc-300">Detecting...</strong>
+          </div>
+        </div>
+        <div class="h-28 bg-zinc-950/80 border border-dashed border-zinc-800 rounded-lg flex items-center justify-center text-xs text-zinc-500">
+          <i data-lucide="radar" class="w-4 h-4 text-[#ff3366] animate-spin mr-2"></i> Simulated Live Radar Active
+        </div>
+      </div>
+
+      <!-- Emergency Contacts Card -->
+      <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-[#ff3366] flex items-center gap-2 mb-4">
+          <i data-lucide="users" class="w-5 h-5"></i> Trusted Guardians
+        </h3>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+            <span class="text-sm text-zinc-300 flex items-center gap-2">
+              <i data-lucide="phone" class="w-4 h-4 text-zinc-500"></i> Mom (Primary)
+            </span>
+            <span class="text-xs text-[#ff3366] font-mono">+91 98765 XXXXX</span>
+          </div>
+          <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+            <span class="text-sm text-zinc-300 flex items-center gap-2">
+              <i data-lucide="phone" class="w-4 h-4 text-zinc-500"></i> Local Police Desk
+            </span>
+            <span class="text-xs text-[#ff3366] font-mono">112 (Direct)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    let sosActive = false;
+    let currentLat = "28.6139";
+    let currentLng = "77.2090";
+
+    // 1. Check Backend Connection Real-time
+    function checkBackend() {
+      fetch('http://localhost:5000/')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('backend-status').innerText = "Active ✅";
+          document.getElementById('backend-status').className = "text-emerald-400 font-semibold";
+        })
+        .catch(() => {
+          document.getElementById('backend-status').innerText = "Offline ❌";
+          document.getElementById('backend-status').className = "text-rose-500 font-semibold";
+        });
+    }
+
+    // Run connection check immediately
+    checkBackend();
+
+    // 2. Detect Geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          currentLat = position.coords.latitude.toFixed(6);
+          currentLng = position.coords.longitude.toFixed(6);
+          document.getElementById('lat').innerText = currentLat;
+          document.getElementById('lng').innerText = currentLng;
+        },
+        () => {
+          document.getElementById('lat').innerText = currentLat;
+          document.getElementById('lng').innerText = currentLng;
+        }
+      );
+    }
+
+    // 3. Toggle SOS Activation & Send data to backend API
+    function triggerSOS() {
+      sosActive = !sosActive;
+      const btn = document.getElementById('sos-btn');
+      const text = document.getElementById('sos-text');
+      
+      if (sosActive) {
+        btn.style.backgroundColor = '#ff3366';
+        btn.classList.remove('neon-pulse');
+        btn.style.boxShadow = '0 0 40px #ff3366';
+        text.innerText = "SOS ACTIVE!";
+        text.style.color = '#ffffff';
+        document.getElementById('sos-icon').setAttribute('class', 'w-16 h-16 text-white');
+
+        // Sending real-time fetch request to our Node.js Backend!
+        fetch('http://localhost:5000/api/sos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: "Anmol_Device_01",
+            latitude: currentLat,
+            longitude: currentLng
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          alert(`🚨 SOS TRIGGERED!\nBackend Response: ${data.message}\nCoordinates Saved!`);
+        })
+        .catch(err => {
+          alert("🚨 SOS Clicked, but Backend connection failed!");
+        });
+
+      } else {
+        btn.style.backgroundColor = '#0a0a0c';
+        btn.classList.add('neon-pulse');
+        text.innerText = "TAP TO SOS";
+        text.style.color = '#ff3366';
+        document.getElementById('sos-icon').setAttribute('class', 'w-16 h-16 text-[#ff3366]');
+      }
+    }
+  </script>
+</body>
+</html>

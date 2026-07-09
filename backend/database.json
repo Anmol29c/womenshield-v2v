@@ -1,0 +1,19 @@
+{
+  "users": [],
+  "alerts": [
+    {
+      "id": "1783626420868",
+      "userId": "Anmol_Device_01",
+      "latitude": "23.427329",
+      "longitude": "75.283962",
+      "timestamp": "2026-07-09T19:47:00.870Z"
+    },
+    {
+      "id": "1783626480720",
+      "userId": "Anmol_Device_01",
+      "latitude": "23.427329",
+      "longitude": "75.283962",
+      "timestamp": "2026-07-09T19:48:00.720Z"
+    }
+  ]
+}
