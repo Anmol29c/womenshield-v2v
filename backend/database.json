@@ -28,6 +28,20 @@
       "latitude": "23.717000",
       "longitude": "76.734000",
       "timestamp": "2026-07-10T00:34:50.695Z"
+    },
+    {
+      "id": "1783662502399",
+      "userId": "Anmol_Device_01",
+      "latitude": "22.686500",
+      "longitude": "75.931300",
+      "timestamp": "2026-07-10T05:48:22.404Z"
+    },
+    {
+      "id": "1783662539589",
+      "userId": "Anmol_Device_01",
+      "latitude": "22.686500",
+      "longitude": "75.931300",
+      "timestamp": "2026-07-10T05:48:59.590Z"
     }
   ]
 }
