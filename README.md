@@ -1,6 +1,6 @@
 # # Anmol Chaturvedi 
 
-## The Idea
+## The Idea 💡 
 
 **Problem:** Women face constant safety challenges—limited real-time emergency response, difficulty contacting help during harassment, and lack of community-driven safety networks.
 
@@ -8,7 +8,7 @@
 
 ---
 
-## Important Links
+## Important Links 🔗 
 
 | Asset Type | Production URL |
 | :--- | :--- |
@@ -18,7 +18,7 @@
 
 ---
 
-## Features
+## Features ✨ 
 
 *   **🚨 TAP TO SOS Button:** One-tap emergency activation that immediately transitions system UI state with vibrant visual feedback (`🔴 TRIGGER SOS` ──> `🚨 SOS ACTIVE`).[cite: 2]
 *   **📍 Live Geolocation Tracking:** Static and responsive geolocation fallback matrix rendering high-precision coordinates (`Latitude: 23.427329`, `Longitude: 75.283952`) instantly.[cite: 2]
@@ -30,7 +30,7 @@
 
 ---
 
-## Tech Stack & Tools
+## Tech Stack & Tools 🔥 
 
 ### Frontend Architecture
 *   **Language & Core:** HTML5, Semantic JavaScript (ES6+ Standard Event Pipelines)[cite: 2]
@@ -46,7 +46,7 @@
 
 ---
 
-## Documentation
+## Documentation 📃 
 
 ### How It Works (Under the Hood)
 
