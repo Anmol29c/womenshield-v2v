@@ -21,9 +21,46 @@
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px rgba(255, 51, 102, 0.6); }
       50% { opacity: .85; transform: scale(0.97); box-shadow: 0 0 40px rgba(255, 51, 102, 0.9); }
     }
+    .flash-red {
+      animation: emergencyFlash 1s infinite;
+    }
+    @keyframes emergencyFlash {
+      0%, 100% { background-color: rgba(15, 15, 18, 1); }
+      50% { background-color: rgba(255, 51, 102, 0.15); }
+    }
   </style>
 </head>
-<body class="min-h-screen p-6">
+<body id="main-body" class="min-h-screen p-6 transition-all duration-300">
+
+  <!-- Presentation SMS Toast Notification Container -->
+  <div id="sms-toast" class="fixed top-5 right-5 z-50 transform translate-x-72 opacity-0 transition-all duration-500 max-w-sm bg-zinc-900 border-l-4 border-emerald-500 p-4 rounded shadow-2xl flex items-start gap-3">
+    <i data-lucide="message-square" class="text-emerald-400 w-6 h-6 shrink-0 mt-0.5"></i>
+    <div>
+      <h4 class="font-bold text-sm text-emerald-400">🚨 Presentation Bonus: SMS Dispatched</h4>
+      <p id="sms-toast-msg" class="text-xs text-zinc-400 mt-1 font-mono"></p>
+    </div>
+  </div>
+
+  <!-- Fake Incoming Call Modal for Presentation -->
+  <div id="fake-call-modal" class="fixed inset-0 z-50 bg-black/95 flex flex-col justify-between items-center p-12 hidden">
+    <div class="text-center mt-12 animate-bounce">
+      <div class="w-24 h-24 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700 shadow-xl">
+        <i data-lucide="user" class="w-12 h-12 text-zinc-400"></i>
+      </div>
+      <h2 class="text-2xl font-black tracking-wide text-white">Emergency Guardian</h2>
+      <p class="text-emerald-400 text-sm font-medium mt-2 tracking-widest animate-pulse">INCOMING EMERGENCY CALL...</p>
+    </div>
+
+    <!-- Call Actions -->
+    <div class="flex gap-16 mb-12">
+      <button onclick="endFakeCall()" class="w-16 h-16 bg-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-rose-600/50 hover:scale-110 active:scale-95 transition-transform">
+        <i data-lucide="phone-off" class="w-7 h-7 text-white"></i>
+      </button>
+      <button onclick="answerFakeCall()" class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50 hover:scale-110 active:scale-95 transition-transform animate-pulse">
+        <i data-lucide="phone" class="w-7 h-7 text-white"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- Header -->
   <header class="flex justify-between items-center border-b border-zinc-800 pb-4 mb-8 max-w-6xl mx-auto">
@@ -56,7 +93,11 @@
         </button>
       </div>
 
-      <p class="text-xs text-zinc-600 text-center">SafeSphere Real-Time Network Active</p>
+      <div class="flex gap-4">
+        <button onclick="triggerFakeCall()" class="text-xs bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 px-3 py-1.5 rounded transition-colors text-zinc-300 flex items-center gap-1.5">
+          <i data-lucide="phone-call" class="w-3.5 h-3.5 text-emerald-400"></i> Test Fake Call
+        </button>
+      </div>
     </div>
 
     <!-- Right Side Cards -->
@@ -106,7 +147,7 @@
     </div>
   </main>
 
-  <!-- NEW Section: Live Database Alerts Log -->
+  <!-- Live Database Alerts Log -->
   <section class="max-w-6xl mx-auto mt-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
     <h3 class="text-lg font-bold text-emerald-400 flex items-center gap-2 mb-4">
       <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i> Real-time Database Response Logs
@@ -131,12 +172,16 @@
     </div>
   </section>
 
+  <!-- HTML5 Audio Element for Presentation Siren -->
+  <audio id="siren-sound" loop src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
+
   <script>
     lucide.createIcons();
 
     let sosActive = false;
     let currentLat = "23.427329";
     let currentLng = "75.283952";
+    const siren = document.getElementById('siren-sound');
 
     function checkBackend() {
       fetch('http://localhost:5000/')
@@ -160,10 +205,6 @@
           currentLng = position.coords.longitude.toFixed(6);
           document.getElementById('lat').innerText = currentLat;
           document.getElementById('lng').innerText = currentLng;
-        },
-        () => {
-          document.getElementById('lat').innerText = currentLat;
-          document.getElementById('lng').innerText = currentLng;
         }
       );
     }
@@ -172,6 +213,7 @@
       sosActive = !sosActive;
       const btn = document.getElementById('sos-btn');
       const text = document.getElementById('sos-text');
+      const body = document.getElementById('main-body');
       
       if (sosActive) {
         btn.style.backgroundColor = '#ff3366';
@@ -180,8 +222,10 @@
         text.innerText = "SOS ACTIVE!";
         text.style.color = '#ffffff';
         document.getElementById('sos-icon').setAttribute('class', 'w-16 h-16 text-white');
+        
+        body.classList.add('flash-red'); // Visual Emergency Flash
+        siren.play().catch(() => console.log("Audio play deferred until user interaction")); // Play Siren
 
-        // Sending request to backend
         fetch('http://localhost:5000/api/sos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -193,16 +237,11 @@
         })
         .then(res => res.json())
         .then(data => {
-          // LIVE RENDER LOGIC: Table me data dynamically append karein
           const logsBody = document.getElementById('logs-body');
-          
-          // Clear "No active SOS" message on first trigger
-          if(logsBody.innerHTML.includes("No active SOS")) {
-            logsBody.innerHTML = "";
-          }
+          if(logsBody.innerHTML.includes("No active SOS")) logsBody.innerHTML = "";
 
           const newRow = `
-            <tr class="border-b border-zinc-800/50 bg-zinc-900/20 hover:bg-zinc-900/60 transition-colors">
+            <tr class="border-b border-zinc-800/50 bg-zinc-900/20">
               <td class="p-3 font-mono text-xs text-zinc-500">${data.alert.id}</td>
               <td class="p-3 font-semibold text-zinc-300">${data.alert.userId}</td>
               <td class="p-3 text-[#ff3366] font-mono text-xs">${data.alert.latitude}, ${data.alert.longitude}</td>
@@ -210,13 +249,18 @@
               <td class="p-3 text-zinc-500 text-xs">${new Date(data.alert.timestamp).toLocaleTimeString()}</td>
             </tr>
           `;
-          
-          logsBody.innerHTML = newRow + logsBody.innerHTML; // Latest alert upar dikhega
+          logsBody.innerHTML = newRow + logsBody.innerHTML;
           lucide.createIcons();
+
+          // Presentation Bonus: Show Mock SMS Toast Sent
+          showSMSToast(`ALERT: User Anmol_Device_01 is in trouble. Location: https://maps.google.com/?q=${currentLat},${currentLng}`);
+          
+          // Presentation Bonus: Automatically trigger fake call after 4 seconds of SOS
+          setTimeout(() => {
+            if(sosActive) triggerFakeCall();
+          }, 4000);
         })
-        .catch(err => {
-          alert("🚨 Backend connection failed!");
-        });
+        .catch(err => console.log("Backend error"));
 
       } else {
         btn.style.backgroundColor = '#0a0a0c';
@@ -224,7 +268,34 @@
         text.innerText = "TAP TO SOS";
         text.style.color = '#ff3366';
         document.getElementById('sos-icon').setAttribute('class', 'w-16 h-16 text-[#ff3366]');
+        body.classList.remove('flash-red');
+        siren.pause();
+        siren.currentTime = 0;
       }
+    }
+
+    // --- PRESENTATION BONUS LOGIC ---
+    function showSMSToast(message) {
+      const toast = document.getElementById('sms-toast');
+      document.getElementById('sms-toast-msg').innerText = message;
+      toast.classList.remove('translate-x-72', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-x-72', 'opacity-0');
+      }, 6000);
+    }
+
+    function triggerFakeCall() {
+      document.getElementById('fake-call-modal').classList.remove('hidden');
+    }
+
+    function endFakeCall() {
+      document.getElementById('fake-call-modal').classList.add('hidden');
+    }
+
+    function answerFakeCall() {
+      alert("☎️ Mock Call Connected: Playing automated defense/safety assistance script for presentation.");
+      endFakeCall();
     }
   </script>
 </body>
