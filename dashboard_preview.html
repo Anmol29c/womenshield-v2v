@@ -104,18 +104,40 @@
       </div>
 
     </div>
-
   </main>
 
+  <!-- NEW Section: Live Database Alerts Log -->
+  <section class="max-w-6xl mx-auto mt-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
+    <h3 class="text-lg font-bold text-emerald-400 flex items-center gap-2 mb-4">
+      <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i> Real-time Database Response Logs
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-zinc-400">
+        <thead class="bg-zinc-950 text-zinc-500 text-xs uppercase border-b border-zinc-800">
+          <tr>
+            <th class="p-3">Alert ID</th>
+            <th class="p-3">User ID</th>
+            <th class="p-3">Coordinates</th>
+            <th class="p-3">Server Message</th>
+            <th class="p-3">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="logs-body">
+          <tr>
+            <td colspan="5" class="p-4 text-center text-zinc-600">No active SOS triggered in this session yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <script>
-    // Initialize Lucide Icons
     lucide.createIcons();
 
     let sosActive = false;
-    let currentLat = "28.6139";
-    let currentLng = "77.2090";
+    let currentLat = "23.427329";
+    let currentLng = "75.283952";
 
-    // 1. Check Backend Connection Real-time
     function checkBackend() {
       fetch('http://localhost:5000/')
         .then(res => res.json())
@@ -129,10 +151,8 @@
         });
     }
 
-    // Run connection check immediately
     checkBackend();
 
-    // 2. Detect Geolocation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -148,7 +168,6 @@
       );
     }
 
-    // 3. Toggle SOS Activation & Send data to backend API
     function triggerSOS() {
       sosActive = !sosActive;
       const btn = document.getElementById('sos-btn');
@@ -162,12 +181,10 @@
         text.style.color = '#ffffff';
         document.getElementById('sos-icon').setAttribute('class', 'w-16 h-16 text-white');
 
-        // Sending real-time fetch request to our Node.js Backend!
+        // Sending request to backend
         fetch('http://localhost:5000/api/sos', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: "Anmol_Device_01",
             latitude: currentLat,
@@ -176,10 +193,29 @@
         })
         .then(res => res.json())
         .then(data => {
-          alert(`🚨 SOS TRIGGERED!\nBackend Response: ${data.message}\nCoordinates Saved!`);
+          // LIVE RENDER LOGIC: Table me data dynamically append karein
+          const logsBody = document.getElementById('logs-body');
+          
+          // Clear "No active SOS" message on first trigger
+          if(logsBody.innerHTML.includes("No active SOS")) {
+            logsBody.innerHTML = "";
+          }
+
+          const newRow = `
+            <tr class="border-b border-zinc-800/50 bg-zinc-900/20 hover:bg-zinc-900/60 transition-colors">
+              <td class="p-3 font-mono text-xs text-zinc-500">${data.alert.id}</td>
+              <td class="p-3 font-semibold text-zinc-300">${data.alert.userId}</td>
+              <td class="p-3 text-[#ff3366] font-mono text-xs">${data.alert.latitude}, ${data.alert.longitude}</td>
+              <td class="p-3 text-emerald-400"><span class="bg-emerald-950/50 border border-emerald-800/30 px-2 py-0.5 rounded text-xs">✅ ${data.message}</span></td>
+              <td class="p-3 text-zinc-500 text-xs">${new Date(data.alert.timestamp).toLocaleTimeString()}</td>
+            </tr>
+          `;
+          
+          logsBody.innerHTML = newRow + logsBody.innerHTML; // Latest alert upar dikhega
+          lucide.createIcons();
         })
         .catch(err => {
-          alert("🚨 SOS Clicked, but Backend connection failed!");
+          alert("🚨 Backend connection failed!");
         });
 
       } else {
